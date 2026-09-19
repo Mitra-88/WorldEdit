@@ -1,20 +1,11 @@
 name: Gradle Build
 on:
-  push:
-    branches:
-      - 'master'
-      - 'version/*'
-  pull_request:
-  merge_group:
+  workflow_dispatch:
 
 jobs:
   build:
-    name: Build WorldEdit on ${{ matrix.os }}
-    runs-on: ${{ matrix.os }}
-    strategy:
-      fail-fast: false
-      matrix:
-        os: [ubuntu-latest, windows-latest]
+    name: Build WorldEdit
+    runs-on: ubuntu-latest
 
     steps:
     - uses: actions/checkout@v6
@@ -27,23 +18,12 @@ jobs:
 
     - name: Setup Gradle
       uses: gradle/actions/setup-gradle@v5
-      with:
-        cache-read-only: ${{ !(github.ref == 'refs/heads/master' || startsWith(github.ref, 'refs/heads/version/')) }}
 
     - name: Execute Gradle build
       run: ./gradlew build -s
 
     - uses: actions/upload-artifact@v6
-      name: Archive Reports
-      if: always()
+      name: Upload JARs
       with:
-        name: reports for ${{ matrix.os }}
-        path: '**/build/reports/**'
-
-    - uses: actions/upload-artifact@v6
-      name: Archive Logs
-      if: always()
-      with:
-        name: logs for ${{ matrix.os }}
-        path: '**/*.log'
-
+        name: worldedit-jars
+        path: '**/build/libs/*.jar'
